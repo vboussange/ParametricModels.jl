@@ -1,0 +1,7 @@
+[deps]
+Bijectors = "76274a88-744f-5084-9051-94815aaf08c4"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+GLM = "38e38edf-8417-5370-95a0-9cbb8c7f171a"
+MiniBatchInference = "27a201f4-b6a1-4745-b96e-0c27845dca54"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"

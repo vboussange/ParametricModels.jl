@@ -3,6 +3,18 @@ uuid = "ea05b012-1b06-4aec-a786-2a545e229cd0"
 authors = ["Victor Boussange"]
 version = "0.1.0"
 
+[deps]
+Bijectors = "76274a88-744f-5084-9051-94815aaf08c4"
+DiffEqSensitivity = "41bf760c-e81c-5289-8e54-58b1f1f8abe2"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+MiniBatchInference = "27a201f4-b6a1-4745-b96e-0c27845dca54"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+Requires = "ae029012-a4dd-5104-9daa-d747884805df"
+SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
+
 [compat]
 julia = "1"
 

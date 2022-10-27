@@ -1,6 +1,8 @@
-using ParametricModels
-using Test
+using ParametricModels, Test
 
-@testset "ParametricModels.jl" begin
-    # Write your tests here.
+@testset "ParametricModels" begin
+    include("models.jl")
+    include("composable_model.jl")
+    include("inference_result.jl")
+    include("inference_model.jl")
 end
