@@ -164,3 +164,11 @@ get_tspan(m::AbstractModel) = m.mp.tspan
 get_dims(m::AbstractModel) = m.mp.dims
 get_plength(m::AbstractModel) = m.mp.plength
 get_kwargs(m::AbstractModel) = m.mp.kwargs
+
+macro model(name) 
+    return :(
+        struct $name{MP<:ModelParams} <: AbstractModel
+            mp::MP
+        end
+    )
+end
