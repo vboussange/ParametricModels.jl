@@ -50,22 +50,18 @@ $(SIGNATURES)
 
 Returns `ODEProblem` associated with `m`.
 """
-function get_prob(m::AbstractModel, u0, p::AbstractArray)
+function get_prob(m::AbstractModel, u0, tspan, p::AbstractArray)
     # @assert length(u0) == cm.mp.N # this is not necessary true if u0 is a vecor of u0s
-    @assert isnothing(get_tspan(m)) != true
-    @show length(p)
-    @show get_plength(m)
     @assert length(p) == get_plength(m)
     p = inverse(get_st(m))(p)
     # transforming in tuple
     p_tuple = get_re(m)(p)
-    prob = ODEProblem(m, u0, get_tspan(m), p_tuple)
+    prob = get_prob(m, u0, tspan, p_tuple)
     return prob
 end
 
-function get_prob(m::AbstractModel, u0, p_tuple::NamedTuple)
-    @assert isnothing(get_tspan(m)) != true
-    prob = ODEProblem(m, u0, get_tspan(m), p_tuple)
+function get_prob(m::AbstractModel, u0, tspan, p_tuple::NamedTuple)
+    prob = ODEProblem(m, u0, tspan, p_tuple)
     return prob
 end
 
@@ -73,16 +69,17 @@ end
 $(SIGNATURES)
 
 Simulate model `m` and returns an `ODESolution`. 
-"""
-function simulate(m::AbstractModel; u0 = get_u0(m), p = get_p(m))
-    prob = get_prob(m, u0, p)
-    sol = solve(prob, get_alg(m); get_kwargs(m)...)
-    return sol
-end
 
-function simulate(m::AbstractModel, u0, tspan, p; kwargs...)
-    prob = get_prob(m, u0, p)
-    sol = solve(prob, get_alg(m); get_kwargs(m)...)
+## Arguments
+- `kwargs`: when provided, erases `kwargs` stored in `m`. 
+"""
+function simulate(m::AbstractModel; u0 = nothing, tspan=nothing, p = nothing, kwargs...)
+    isnothing(u0) ? u0 = get_u0(m) : nothing
+    isnothing(tspan) ? tspan = get_tspan(m) : nothing
+    isnothing(p) ? p = get_p(m) : nothing
+    prob = get_prob(m, u0, tspan, p)
+    # kwargs erases get_kwargs(m)
+    sol = solve(prob, get_alg(m); get_kwargs(m)..., kwargs...)
     return sol
 end
 
@@ -157,7 +154,7 @@ function ModelParams(
                     kwargs=(;sensealg,kwargs...))
 end
 
-ModelParams(p, tspan, u0, alg; kwargs...) = ModelParams(p, fill(Identity{0},length(p)), tspan, u0, alg; kwargs...)
+ModelParams(p, tspan, u0, alg; kwargs...) = ModelParams(p, fill(Identity{0}(),length(p)), tspan, u0, alg; kwargs...)
 
 get_p(m::AbstractModel) = m.mp.p
 get_u0(m::AbstractModel) = m.mp.u0
