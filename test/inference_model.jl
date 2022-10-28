@@ -2,7 +2,7 @@
 Using Turing on synthetic data
 =#
 cd(@__DIR__)
-using MiniBatchInference, OrdinaryDiffEq, Econobio
+using MiniBatchInference, OrdinaryDiffEq
 using DiffEqSensitivity
 using Optimization, OptimizationFlux, OptimizationOptimJL # for optimizers
 using LinearAlgebra

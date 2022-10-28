@@ -9,18 +9,22 @@ end
 import Base.show
 Base.show(io::IO, res::InferenceResult) = println(io, "`InferenceResult` with model", name(res.m))
 
+"""
+$(SIGNATURES)
+
+Uses bijectors to make sure to obtain correct parameter values
+"""
 function construct_result(m::Model, res::RES) where {Model<:AbstractModel, RES}
-    params_trained = remake(m.mp, p=res.p_trained |> m.mp.st)
-    return InferenceResult(typeof(m)(params_trained),res) #/!\ new{Model,RES}( is required! 
+    params_trained = res.p_trained |> m.mp.st
+    return InferenceResult(remake(m,p=params_trained),res) #/!\ new{Model,RES}( is required! 
 end
 
-function construct_result(cm::CM, res::RES) where {CM <: ComposableModel, RES}
-    p_trained = res.p_trained
-    p = vcat([cm.models[i].mp.st(p_trained[cm.param_indices[i]]) for i in 1:length(cm.models)]...)
-    params_trained = remake(cm.mp, p = p)
-    cm = remake(cm, mp = params_trained)
-    return InferenceResult(cm, res) #/!\ new{Model,RES}( is required! 
-end
+# function construct_result(cm::CM, res::RES) where {CM <: ComposableModel, RES}
+#     _ps = res.p_trained
+#     params_traineds = [cm.models[i].st(_ps[cm.param_indices[i]]) for i in 1:length(cm.models)]
+#     models = [remake(m, p=params_traineds[i]) for (i,m) in enumerate(models)]
+#     return InferenceResult(ComposableModel(models...), res) #/!\ new{Model,RES}( is required! 
+# end
 
 function loglikelihood(res::InferenceResult, 
                         ode_data::Array, 
@@ -30,9 +34,9 @@ function loglikelihood(res::InferenceResult,
                         p = res.res.p_trained) # we take res.res.p_trained because we would have to transform the parameters otherwise
 
     θ = [u0s...;p] 
-    prob = ODEProblem(res.m, u0s[1], res.m.mp.tspan, p)
+    prob = ODEProblem(res.m, u0s[1], (get_tspan(res.m)), p)
     loss_fn(data, params, pred, rg) = loglike_fn(data, pred, Σ)
-    l, _ = minibatch_loss(θ, ode_data, res.m.mp.kwargs_sol[:saveat], prob, loss_fn, res.m.mp.alg, res.res.ranges; continuity_term=0.)
+    l, _ = minibatch_loss(θ, ode_data, get_kwargs(res.m)[:saveat], prob, loss_fn, get_alg(res.m), res.res.ranges; continuity_term=0.)
     return l
 end
 

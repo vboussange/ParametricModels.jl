@@ -41,13 +41,72 @@ end
 Base.length(m::Modelμonly) = 1
 =#
 
+abstract type AbstractModel end
+name(m::AbstractModel) = string(typeof(m))
+Base.show(io::IO, cm::AbstractModel) = println(io, "`Model` ", name(cm))
 
 """
 $(SIGNATURES)
 
-A model takes `mp::ModelParams` as arguments, and a tuple of
-bijectors `dists` to transform parameters in order to ensure, e.g., 
-positivity during inference.
+Returns `ODEProblem` associated with `m`.
+"""
+function get_prob(m::AbstractModel, u0, p::Vector)
+    # @assert length(u0) == cm.mp.N # this is not necessary true if u0 is a vecor of u0s
+    @assert isnothing(get_tspan(m)) != true
+    @assert length(p) == get_plength(m)
+    p = inverse(get_st(m))(p)
+    # transforming in tuple
+    p_tuple = get_re(m)(p)
+    prob = ODEProblem(m, u0, get_tspan(m), p_tuple)
+    return prob
+end
+
+function get_prob(m::AbstractModel, u0, p_tuple::NamedTuple)
+    @assert isnothing(get_tspan(m)) != true
+    prob = ODEProblem(m, u0, get_tspan(m), p_tuple)
+    return prob
+end
+
+"""
+$(SIGNATURES)
+
+Simulate model `m` and returns an `ODESolution`. 
+"""
+function simulate(m::AbstractModel; u0 = get_u0(m), p = get_p(m))
+    prob = get_prob(m, u0, p)
+    sol = solve(prob, get_alg(m); get_kwargs(m)...)
+    return sol
+end
+
+function simulate(m::AbstractModel, u0, tspan, p; kwargs...)
+    prob = get_prob(m, u0, p)
+    sol = solve(prob, get_alg(m); get_kwargs(m)...)
+    return sol
+end
+
+Base.@kwdef struct ModelParams{P,ST,RE,T,U0,A,D,PL,K}
+    p::P # Named tuple, trainable parameters
+    st::ST # Bijectors
+    re::RE # to reconstruct parameters
+    tspan::T # time span
+    u0::U0 # u0
+    alg::A # alg for ODEsolve
+    dims::D # dimension of state variable
+    plength::PL # parameter length
+    kwargs::K # kwargs given to solve fn, e.g., saveat
+end
+
+# model parameters
+"""
+$SIGNATURES
+
+To be completed
+
+## Arguments
+- `kwargs`: Additional arguments splatted to the ODE solver. Refer to the
+[Local Sensitivity Analysis](https://diffeq.sciml.ai/dev/analysis/sensitivity/) and
+[Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+documentation for more details.
 
 ## Examples
 ```julia
@@ -67,68 +126,41 @@ For distributions from bijectors, one can use:
 - Squared
 - Abs
 """
-abstract type AbstractModel end
-name(m::AbstractModel) = string(typeof(m))
-Base.show(io::IO, cm::AbstractModel) = println(io, "`Model` ", name(cm))
+function ModelParams(
+                    p,
+                    dists,
+                    tspan,
+                    u0,
+                    alg,
+                    sensealg = DiffEqSensitivity.ForwardDiffSensitivity(),
+                    kwargs...)
+    @assert length(dists) == length(values(p))
+    @assert eltype(p) <: Array "The values of `p` must be arrays"
+    lp = [0;length.(values(p))...]
+    idx_st = [sum(lp[1:i])+1:sum(lp[1:i+1]) for i in 1:length(lp)-1]
 
-"""
-$(SIGNATURES)
+    dims = length(u0)
+    plength = length(p)
+    _, re = Optimisers.destructure(p)
 
-Returns `ODEProblem` associated with `m`.
-"""
-function get_prob(m::AbstractModel;u0 = m.mp.u0, p=m.mp.p)
-    # @assert length(u0) == cm.mp.N # this is not necessary true if u0 is a vecor of u0s
-    @assert isnothing(m.mp.tspan) != true
-    @assert length(p) == length(m)
-    # TODO: inverse to be checked
-    prob = ODEProblem(m, u0, m.mp.tspan, inverse(m.mp.st)(p))
-    return prob
+    ModelParams(;
+                    p,
+                    st=Stacked(dists,idx_st),
+                    re,
+                    tspan,
+                    u0,
+                    alg,
+                    dims,
+                    plength,
+                    kwargs=(;sensealg,kwargs...))
 end
 
-"""
-$(SIGNATURES)
-
-Simulate model `m` and returns an `ODESolution`. 
-"""
-function simulate(m::AbstractModel;u0 = m.mp.u0, p=m.mp.p)
-    prob = get_prob(m; u0, p)
-    sol = solve(prob, m.mp.alg; sensealg = DiffEqSensitivity.ForwardDiffSensitivity(), m.mp.kwargs_sol...)
-    return sol
-end
-
-# model parameters
-Base.@kwdef struct ModelParams{T,P,U0,G,NN,L,U,ST,A,K<: Dict}
-    tspan::T = ()
-    p::P = [] # parameter vector
-    plabel::Vector{String} = String[] # parameter label vector
-    u0::U0 = [] # ICs
-    g::G = nothing # graph interactions
-    N::NN # nb of products
-    lap::L = nothing # laplacian
-    uworld::U = nothing # input signal world
-    st::ST = Identity{0}()
-    alg::A = ()
-    kwargs_sol::K = Dict()
-end
-
-
-#=
-macro ParametricModel(name, length) 
-    return esc(:(
-        begin
-            Base.@kwdef struct $name{P,MP,U0,NN,ST,A,T,K<: NamedTuple} <: AbstractModel
-                p::P = [] # parameter vector
-                mp::MP = () # extra model parameters (not fitted)
-                plabel::Vector{String} = String[] # parameter label vector
-                u0::U0 = [] # ICs
-                N::NN # dimension of state variable
-                st::ST = Identity{0}() # bijectors
-                alg::A = () # solving algorithms
-                tspan::T = ()
-                kwargs_sol::K = NamedTuple() # key words algorithms
-            end
-
-            Base.length(m::$name) = $length
-        end
-    ))
-=#
+get_p(m::AbstractModel) = m.mp.p
+get_u0(m::AbstractModel) = m.mp.u0
+get_alg(m::AbstractModel) = m.mp.alg
+get_st(m::AbstractModel) = m.mp.st
+get_re(m::AbstractModel) = m.mp.re
+get_tspan(m::AbstractModel) = m.mp.tspan
+get_dims(m::AbstractModel) = m.mp.dims
+get_plength(m::AbstractModel) = m.mp.plength
+get_kwargs(m::AbstractModel) = m.mp.kwargs

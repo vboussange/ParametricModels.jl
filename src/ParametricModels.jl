@@ -11,7 +11,7 @@ module ParametricModels
     using Requires
 
     include("models.jl")
-    include("composable_model.jl")
+    # include("composable_model.jl")
     include("grad_descent.jl")
     include("inference_result.jl")
     include("utils.jl")
