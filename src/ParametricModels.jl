@@ -4,7 +4,8 @@ module ParametricModels
     using Statistics
     using UnPack
     using DocStringExtensions
-    using SciMLBase, Bijectors
+    using SciMLBase
+    using Bijectors: Identity
     using OrdinaryDiffEq, DiffEqSensitivity
     using Optimisers
     using LinearAlgebra

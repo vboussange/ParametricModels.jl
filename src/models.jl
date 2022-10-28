@@ -50,9 +50,11 @@ $(SIGNATURES)
 
 Returns `ODEProblem` associated with `m`.
 """
-function get_prob(m::AbstractModel, u0, p::Vector)
+function get_prob(m::AbstractModel, u0, p::AbstractArray)
     # @assert length(u0) == cm.mp.N # this is not necessary true if u0 is a vecor of u0s
     @assert isnothing(get_tspan(m)) != true
+    @show length(p)
+    @show get_plength(m)
     @assert length(p) == get_plength(m)
     p = inverse(get_st(m))(p)
     # transforming in tuple
@@ -131,7 +133,7 @@ function ModelParams(
                     dists,
                     tspan,
                     u0,
-                    alg,
+                    alg;
                     sensealg = DiffEqSensitivity.ForwardDiffSensitivity(),
                     kwargs...)
     @assert length(dists) == length(values(p))
@@ -140,7 +142,7 @@ function ModelParams(
     idx_st = [sum(lp[1:i])+1:sum(lp[1:i+1]) for i in 1:length(lp)-1]
 
     dims = length(u0)
-    plength = length(p)
+    plength = sum(length.(values(p)))
     _, re = Optimisers.destructure(p)
 
     ModelParams(;
@@ -154,6 +156,8 @@ function ModelParams(
                     plength,
                     kwargs=(;sensealg,kwargs...))
 end
+
+ModelParams(p, tspan, u0, alg; kwargs...) = ModelParams(p, fill(Identity{0},length(p)), tspan, u0, alg; kwargs...)
 
 get_p(m::AbstractModel) = m.mp.p
 get_u0(m::AbstractModel) = m.mp.u0
