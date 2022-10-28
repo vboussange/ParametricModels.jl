@@ -1,3 +1,62 @@
 # ParametricModels
 
 [![Build Status](https://github.com/vboussange/ParametricModels.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/vboussange/ParametricModels.jl/actions/workflows/CI.yml?query=branch%3Amain)
+
+DifferentialEquations.jl is amazing, but sometimes you want to write an ODE model once for all, and simply play around with the model without bothering further with the details of the numerical solve, etc... If this is the case, ParametricModels.jl is for you!
+
+## Getting started
+
+```julia
+using ParametricModels, UnPack
+
+# Set the model name
+@model LogisticGrowth
+
+# Define the ODE system
+function LogisticGrowth(du, u, p, t)
+    @unpack r, b = p
+    du .=  r .* u .* ( 1. .- b .* u) 
+end
+
+tsteps = 1.:0.5:100.5
+tspan = (tsteps[1], tsteps[end])
+p1 = (r = [0.05, 0.06], b = [0.23, 0.5],)
+u0 = ones(2)
+
+# Instantiating the model
+mp = ModelParams(p1, 
+                tspan,
+                u0, 
+                BS3(),
+                saveat = tsteps, 
+                )
+model = LogisticGrowth(mp)
+
+# Playing with the model, without worrying about the details!
+sol = simulate(model)
+
+p2 = (r = [0.05, 0.06], b = [0.4, 0.6],)
+sol2 = simulate(model, p = p2)
+
+u0  = [3., 4.]
+sol3 = simulate(model, u0 = u0)
+```
+
+## Use with MiniBatchInference.jl
+Have you heard of MiniBatchInference.jl? In this library aiming at fitting ODE parameters, ParametricModels.jl proves very useful. It helps defining a space for the parameters in order to apply e.g. stochastic gradient descent with parameter constraints. It does so through the library Bijectors.jl. This can be done like so:
+
+```julia
+# We constrain the parameter vector `r` 
+# to take positive values, 
+# while `b` is not constrained
+p1 = (r = [0.05, 0.06], b = [0.23, 0.5],)
+dists = (Abs{0}(), Identity{0}())
+mp = ModelParams(p1,
+                dists,
+                tspan,
+                u0, 
+                BS3(),
+                saveat = tsteps, 
+                )
+model = LogisticGrowth(mp)
+```
