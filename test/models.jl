@@ -1,7 +1,7 @@
 using OrdinaryDiffEq, Test, UnPack
 using Bijectors: Exp, inverse, Identity, Stacked
 using Random; Random.seed!(2)
-using DocStringExtensions, Optimisers, DiffEqSensitivity
+using Optimisers
 #=
 Defining specific models to test `AbstractModel`
 
@@ -59,27 +59,27 @@ end
     @test all(paraminv |> get_st(model) .≈ pflat)
 end
 
-using MiniBatchInference, LinearAlgebra
-# TODO: make sure that the results are coherent
-@testset "loglikelihood" begin
-    p_true = (r = rand(N), b = rand(N), α = rand(1))
-    u0 = rand(N)
-    dudt_log = Modelα(ModelParams(p_true,
-                                    dist,
-                                    tspan,
-                                    u0,
-                                    BS3();
-                                    saveat=tsteps
-                                    ))
-    ode_data = simulate(dudt_log) |> Array
+# using MiniBatchInference, LinearAlgebra
+# # TODO: make sure that the results are coherent
+# @testset "loglikelihood" begin
+#     p_true = (r = rand(N), b = rand(N), α = rand(1))
+#     u0 = rand(N)
+#     dudt_log = Modelα(ModelParams(p_true,
+#                                     dist,
+#                                     tspan,
+#                                     u0,
+#                                     BS3();
+#                                     saveat=tsteps
+#                                     ))
+#     ode_data = simulate(dudt_log) |> Array
 
-    group_size = 6
-    ranges = get_ranges(group_size, length(tsteps))
-    pflat,_ = Optimisers.destructure(p_true)
+#     group_size = 6
+#     ranges = get_ranges(group_size, length(tsteps))
+#     pflat,_ = Optimisers.destructure(p_true)
 
-    p_estimated = pflat .+ 0.02
-    u0s = [ode_data[:,rg[1]] for rg in ranges]
-    res = InferenceResult(dudt_log, ResultMLE(p_trained = p_estimated[1:get_plength(dudt_log)],
-                                            ranges=ranges))
-    @test ParametricModels.loglikelihood(res, ode_data, 0.1; u0s = u0s) < 1.0
-end
+#     p_estimated = pflat .+ 0.02
+#     u0s = [ode_data[:,rg[1]] for rg in ranges]
+#     res = InferenceResult(dudt_log, ResultMLE(p_trained = p_estimated[1:get_plength(dudt_log)],
+#                                             ranges=ranges))
+#     @test ParametricModels.loglikelihood(res, ode_data, 0.1; u0s = u0s) < 1.0
+# end
