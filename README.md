@@ -42,6 +42,20 @@ u0  = [3., 4.]
 sol3 = simulate(model, u0 = u0)
 ```
 
+## Defining generic models
+The macro @model defines under the hood a `struct` which inherits AbstractModel.
+You can write by hand the `struct` to write generic models, which can e.g. be declined for ODE systems with state variables with arbitrary dimensions, or with exchangeable components.
+
+To define a model, you need the following
+
+```
+struct MyModel{EF} <: AbstractModel
+    mp::ModelParams
+    extra_field::EF #optional
+end
+```
+And then define the ODE system as usual, where you can use `extra_field` as you wish.
+
 ## Use with MiniBatchInference.jl
 Have you heard of MiniBatchInference.jl? In this library aiming at fitting ODE parameters, ParametricModels.jl proves very useful. It helps defining a space for the parameters in order to apply e.g. stochastic gradient descent with parameter constraints. It does so through the library Bijectors.jl. This can be done like so:
 

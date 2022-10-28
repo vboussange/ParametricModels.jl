@@ -1,3 +1,5 @@
+# TODO: for now, this file is not working
+
 struct ComposableModel{MS,PS} <: AbstractModel
     models::MS # tuple of abstract models
     param_indices::PS # used for indexing parameters for each submodels
