@@ -82,7 +82,7 @@ function ModelParams(
                     sensealg = DiffEqSensitivity.ForwardDiffSensitivity(),
                     kwargs...)
     @assert length(dists) == length(values(p))
-    @assert eltype(p) <: Array "The values of `p` must be arrays"
+    @assert eltype(p) <: AbstractArray "The values of `p` must be arrays"
     lp = [0;length.(values(p))...]
     idx_st = [sum(lp[1:i])+1:sum(lp[1:i+1]) for i in 1:length(lp)-1]
 
