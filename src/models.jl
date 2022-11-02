@@ -7,6 +7,9 @@ Base.show(io::IO, cm::AbstractModel) = println(io, "`Model` ", name(cm))
 $(SIGNATURES)
 
 Returns the `ODEProblem` associated with to `m`.
+
+When `p` is an `AbstractVector`, p is transformed, given `m.mp.st` (bijectors).
+When `p` is a Named tuple, no transformation is performed.
 """
 function get_prob(m::AbstractModel, u0, tspan, p::AbstractArray)
     # @assert length(u0) == cm.mp.N # this is not necessary true if u0 is a vecor of u0s
@@ -29,6 +32,8 @@ $(SIGNATURES)
 Simulate model `m` and returns an `ODESolution`.  
 When provided, keyword arguments overwrite default solving options 
 in m.
+When `p` is an `AbstractVector`, p is transformed, given `m.mp.st` (bijectors).
+When `p` is a Named tuple, no transformation is performed.
 """
 function simulate(m::AbstractModel; u0 = nothing, tspan=nothing, p = nothing, kwargs...)
     isnothing(u0) ? u0 = get_u0(m) : nothing
