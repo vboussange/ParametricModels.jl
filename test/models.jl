@@ -29,9 +29,9 @@ N = 10
 tspan = (0., 1.)
 tsteps = range(tspan[1], tspan[end], length=10)
 
-dist = (Exp{0}(), Identity{0}(),Identity{0}())
+dist = (Squared{0}(), Identity{0}(), Identity{0}())
 
-@testset "testing model" begin
+@testset "testing `simulate`" begin
     p = (r = rand(N), b = rand(N), α = rand(1))
     u0 = rand(N)
     dudt_log = Modelα(ModelParams(p,
@@ -45,7 +45,7 @@ dist = (Exp{0}(), Identity{0}(),Identity{0}())
 end
 
 
-@testset "testing bijections" begin
+@testset "testing bijections forward inverse" begin
     p_true = (r = rand(N), b = rand(N), α = rand(1))
     u0 = rand(N)
     model = Modelα(ModelParams(p_true,
@@ -57,6 +57,24 @@ end
     pflat, _ = Optimisers.destructure(p_true)
     paraminv = inverse(get_st(model))(pflat)
     @test all(paraminv |> get_st(model) .≈ pflat)
+end
+
+@testset "testing simulate with bijections" begin
+    p = (r = rand(N), b = rand(N), α = rand(1))
+    p2 = (r = .- p.r, b = p.b, α = p.α)
+    pflat2, _ = Optimisers.destructure(p2)
+
+    u0 = rand(N)
+    dudt_log = Modelα(ModelParams(p,
+                                    dist,
+                                    tspan,
+                                    u0,
+                                    BS3();
+                                    saveat=tsteps
+                                    ))
+    sol = simulate(dudt_log; u0, p)
+    sol2 = simulate(dudt_log; u0, p = get_st(dudt_log)(pflat2))
+    @test all(Array(sol) .== Array(sol2))
 end
 
 # using MiniBatchInference, LinearAlgebra

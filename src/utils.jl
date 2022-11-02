@@ -12,3 +12,10 @@ struct NegAbs{N} <: Bijector{N} end
 (::NegAbs)(x) = - abs.(x) # transform itself, "forward"
 (::Inverse{<: NegAbs})(y) = y # inverse tramsform, "backward"
 logabsdetjac(::NegAbs{0}, y::Real) = zero(eltype(y)) # ∂ₓx^2 = 2 x → log(abs(1)) = log(2) + log(x)
+
+struct AbsCap{N,C} <: Bijector{N} 
+    c::C
+end
+(a::AbsCap)(x) = x .- a.c # transform itself, "forward"
+(a::Inverse{<: AbsCap})(y) = abs.(y) .+ a.orig.c # inverse tramsform, "backward"
+logabsdetjac(::Abs{0}, y::Real) = zero(eltype(y)) # ∂ₓx^2 = 2 x → log(abs(1)) = log(2) + log(x)

@@ -14,7 +14,7 @@ When `p` is a Named tuple, no transformation is performed.
 function get_prob(m::AbstractModel, u0, tspan, p::AbstractArray)
     # @assert length(u0) == cm.mp.N # this is not necessary true if u0 is a vecor of u0s
     @assert length(p) == get_plength(m)
-    p = inverse(get_st(m))(p)
+    p = inverse(get_st(m))(p) # projecting p in true parameter space
     # transforming in tuple
     p_tuple = get_re(m)(p)
     prob = get_prob(m, u0, tspan, p_tuple)
