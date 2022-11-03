@@ -1,6 +1,6 @@
 
 abstract type AbstractModel end
-name(m::AbstractModel) = string(typeof(m))
+name(m::AbstractModel) = string(nameof(typeof(m)))
 Base.show(io::IO, cm::AbstractModel) = println(io, "`Model` ", name(cm))
 
 """
