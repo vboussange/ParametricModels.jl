@@ -23,6 +23,6 @@ module ParametricModels
     #     name, R2
     export Squared, Abs, NegAbs, AbsCap
     export get_p, get_u0, get_alg, get_st, get_re, get_tspan, 
-        get_dims, get_plength, get_kwargs
+        get_dims, get_plength, get_kwargs, get_mp
 
 end

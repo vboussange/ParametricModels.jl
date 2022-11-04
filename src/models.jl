@@ -125,6 +125,7 @@ function remake(mp::ModelParams; kwargs...)
     ModelParams(; struct_as_namedtuple_with_kw(mp)..., kwargs...)
 end
 
+get_mp(m::AbstractModel) = m.mp
 get_p(m::AbstractModel) = m.mp.p
 get_u0(m::AbstractModel) = m.mp.u0
 get_alg(m::AbstractModel) = m.mp.alg
@@ -142,9 +143,12 @@ $SIGNATURES
 Generates the skeleton of the model, a `struct` containing details of the numerical implementation.
 """
 macro model(name) 
-    return :(
+    expr = quote
         struct $name{MP<:ModelParams} <: AbstractModel
             mp::MP
         end
-    )
+
+        $(esc(name))(;mp) = $(esc(name))(mp)
+    end
+    return expr
 end
