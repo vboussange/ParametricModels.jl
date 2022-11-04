@@ -17,7 +17,7 @@ module ParametricModels
     # include("inference_result.jl")
     include("utils.jl")
 
-    export AbstractModel, ComposableModel, simulate, ModelParams, @model, name
+    export AbstractModel, ComposableModel, simulate, ModelParams, @model, name, remake
     # export InferenceResult, construct_result, loglikelihood, estimate_σ,
     #     get_var_covar_matrix, compute_cis, compute_cis_normal, compute_cis_lognormal,
     #     name, R2
