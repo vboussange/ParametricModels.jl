@@ -121,6 +121,7 @@ ModelParams(p, tspan, u0, alg; kwargs...) = ModelParams(p, fill(Identity{0}(),le
     Expr(:tuple, A...)
 end
 
+import SciMLBase.remake
 function remake(mp::ModelParams; kwargs...)
     ModelParams(; struct_as_namedtuple_with_kw(mp)..., kwargs...)
 end
