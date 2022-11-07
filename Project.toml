@@ -1,7 +1,7 @@
 name = "ParametricModels"
 uuid = "ea05b012-1b06-4aec-a786-2a545e229cd0"
 authors = ["Victor Boussange"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Bijectors = "76274a88-744f-5084-9051-94815aaf08c4"
