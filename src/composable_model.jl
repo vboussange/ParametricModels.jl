@@ -41,7 +41,7 @@ end
 # TODO: define all these
 # get_p(m::ParametricModel) = m.p
 # get_np(m::ParametricModel) = m.np
-# get_st(m::ParametricModel) = m.st
+# get_p_bijector(m::ParametricModel) = m.st
 # get_re(m::ParametricModel) = m.re
 # get_tspan(m::ParametricModel) = m.tspan
 # get_dims(m::ParametricModel) = m.dims

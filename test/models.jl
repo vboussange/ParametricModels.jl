@@ -1,3 +1,4 @@
+using ParametricModels
 using OrdinaryDiffEq, Test, UnPack
 using Bijectors: Exp, inverse, Identity, Stacked
 using Random; Random.seed!(2)
@@ -55,8 +56,8 @@ end
                             BS3()
                             ))
     pflat, _ = Optimisers.destructure(p_true)
-    paraminv = inverse(get_st(model))(pflat)
-    @test all(paraminv |> get_st(model) .≈ pflat)
+    paraminv = inverse(get_p_bijector(model))(pflat)
+    @test all(paraminv |> get_p_bijector(model) .≈ pflat)
 end
 
 @testset "testing simulate with bijections" begin
@@ -73,7 +74,7 @@ end
                                     saveat=tsteps
                                     ))
     sol = simulate(dudt_log; u0, p)
-    sol2 = simulate(dudt_log; u0, p = get_st(dudt_log)(pflat2))
+    sol2 = simulate(dudt_log; u0, p = get_p_bijector(dudt_log)(pflat2))
     @test all(Array(sol) .== Array(sol2))
 end
 

@@ -14,7 +14,7 @@ When `p` is a Named tuple, no transformation is performed.
 function get_prob(m::AbstractModel, u0, tspan, p::AbstractArray)
     # @assert length(u0) == cm.mp.N # this is not necessary true if u0 is a vecor of u0s
     @assert length(p) == get_plength(m)
-    p = inverse(get_st(m))(p) # projecting p in true parameter space
+    p = inverse(get_p_bijector(m))(p) # projecting p in true parameter space
     # transforming in tuple
     p_tuple = get_re(m)(p)
     prob = get_prob(m, u0, tspan, p_tuple)
@@ -45,12 +45,13 @@ function simulate(m::AbstractModel; u0 = nothing, tspan=nothing, p = nothing, kw
     return sol
 end
 
-Base.@kwdef struct ModelParams{P,ST,RE,T,U0,A,D,PL,K}
-    p::P # Named tuple, trainable parameters
-    st::ST # Bijectors
+Base.@kwdef struct ModelParams{P,PST,RE,T,U0,U0ST,A,D,PL,K}
+    p::P # Named tuple, trainable parameters. /!\ Not real values, transformed by p_dist!
+    p_bij::PST # p bijectors
     re::RE # to reconstruct parameters
     tspan::T # time span
-    u0::U0 # u0
+    u0::U0 # u0. /!\ Not real values, transformed by p_dist!
+    u0_bij::U0ST # u0 bijector
     alg::A # alg for ODEsolve
     dims::D # dimension of state variable
     plength::PL # parameter length
@@ -65,7 +66,7 @@ Type containing the details for the numerical simulation of a model.
 
 ## Arguments
 - `p`: default parameter. Must be a NamedTuple!
-- `dists`: a tuple with same length as `p`, containing bijectors.
+- `p_dists`: a tuple with same length as `p`, containing bijectors.
     For distributions from bijectors, one can use:
     - Identity
     - Exp
@@ -80,13 +81,14 @@ Type containing the details for the numerical simulation of a model.
 """
 function ModelParams(
                     p,
-                    dists,
+                    p_dists,
                     tspan,
                     u0,
+                    u0_bij,
                     alg;
                     sensealg = DiffEqSensitivity.ForwardDiffSensitivity(),
                     kwargs...)
-    @assert length(dists) == length(values(p))
+    @assert length(p_dists) == length(values(p)) "Each element of `p_dist` should correspond to an entry of `p`"
     @assert eltype(p) <: AbstractArray "The values of `p` must be arrays"
     lp = [0;length.(values(p))...]
     idx_st = [sum(lp[1:i])+1:sum(lp[1:i+1]) for i in 1:length(lp)-1]
@@ -96,17 +98,19 @@ function ModelParams(
     _, re = Optimisers.destructure(p)
 
     ModelParams(;p,
-                st=Stacked(dists,idx_st),
+                p_bij=Stacked(p_dists,idx_st),
                 re,
                 tspan,
                 u0,
+                u0_bij,
                 alg,
                 dims,
                 plength,
                 kwargs=(;sensealg,kwargs...))
 end
 
-ModelParams(p, tspan, u0, alg; kwargs...) = ModelParams(p, fill(Identity{0}(),length(p)), tspan, u0, alg; kwargs...)
+ModelParams(p, tspan, u0, alg; kwargs...) = ModelParams(p, fill(Identity{0}(),length(p)), tspan, u0, fill(Identity{0}(),length(u0)), alg; kwargs...)
+ModelParams(p, p_dists, tspan, u0, alg; kwargs...) = ModelParams(p, p_dists, tspan, u0, Stacked(Identity{0}(), 1:length(u0)), alg; kwargs...)
 
 # This may be the other option for using remake function from SciMLBase
 # see https://github.com/SciML/SciMLBase.jl/blob/d7e3d316a014967414f416efa35e4d1aca5458e5/src/remake.jl#L1-L4
@@ -130,7 +134,8 @@ get_mp(m::AbstractModel) = m.mp
 get_p(m::AbstractModel) = m.mp.p
 get_u0(m::AbstractModel) = m.mp.u0
 get_alg(m::AbstractModel) = m.mp.alg
-get_st(m::AbstractModel) = m.mp.st
+get_p_bijector(m::AbstractModel) = m.mp.p_bij
+get_u0_bijector(m::AbstractModel) = m.mp.u0_bij
 get_re(m::AbstractModel) = m.mp.re
 get_tspan(m::AbstractModel) = m.mp.tspan
 get_dims(m::AbstractModel) = m.mp.dims
