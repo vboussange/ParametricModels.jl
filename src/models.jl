@@ -58,6 +58,32 @@ struct ModelParams{P,PST,RE,T,U0,U0ST,A,D,PL,K}
     kwargs::K # kwargs given to solve fn, e.g., saveat
 end
 
+import SciMLBase.remake
+remake(mp::ModelParams; p) = ModelParams(p, mp.p_bij, mp.re, mp.tspan, mp.u0, mp.u0_bij, mp.alg, mp.dims, mp.plength, mp.kwargs)
+    
+# # for the remake fn
+# function ModelParams(;p, 
+#                     p_bij::PST, 
+#                     re, 
+#                     tspan, 
+#                     u0, 
+#                     u0_bij, 
+#                     alg, 
+#                     dims, 
+#                     plength,
+#                     kwargs) where PST <: Bijector
+#     ModelParams(p, 
+#                 p_bij, 
+#                 re, 
+#                 tspan, 
+#                 u0, 
+#                 u0_bij, 
+#                 alg, 
+#                 dims, 
+#                 plength,
+#                 kwargs)
+# end
+
 # model parameters
 """
 $(SIGNATURES)
@@ -103,24 +129,6 @@ function ModelParams(; p, tspan, u0, alg,
                 dims,
                 plength,
                 (;sensealg,kwargs...))
-end
-
-# This may be the other option for using remake function from SciMLBase
-# see https://github.com/SciML/SciMLBase.jl/blob/d7e3d316a014967414f416efa35e4d1aca5458e5/src/remake.jl#L1-L4
-# but for some reason, ,this is making Julia crash, 
-# So we keep the other options
-# ModelParams(;p, st, re, tspan, u0, alg, dims, plength, kwargs...) = ModelParams(;p, st, re, tspan, u0, alg, dims, plength, kwargs = kwargs)
-
-@generated function struct_as_namedtuple_with_kw(st)
-    # function taken from https://github.com/SciML/SciMLBase.jl/blob/d7e3d316a014967414f416efa35e4d1aca5458e5/src/remake.jl#L1-L4
-    # but where we consider the field kwargs
-    A = (Expr(:(=), n, :(st.$n)) for n in fieldnames(st))
-    Expr(:tuple, A...)
-end
-
-import SciMLBase.remake
-function remake(mp::ModelParams; kwargs...)
-    ModelParams(; struct_as_namedtuple_with_kw(mp)..., kwargs...)
 end
 
 get_mp(m::AbstractModel) = m.mp
