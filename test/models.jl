@@ -1,8 +1,8 @@
 using ParametricModels
 using OrdinaryDiffEq, Test, UnPack
-using Bijectors: Exp, inverse, Identity, Stacked
+using Bijectors
 using Random; Random.seed!(2)
-using Optimisers
+using Optimisers, Distributions
 #=
 Defining specific models to test `AbstractModel`
 
@@ -30,16 +30,30 @@ N = 10
 tspan = (0., 1.)
 tsteps = range(tspan[1], tspan[end], length=10)
 
-dist = (Squared{0}(), Identity{0}(), Identity{0}())
+p_bij = (Squared{0}(), Identity{0}(), Identity{0}())
+u0_bij = bijector(Uniform(0,1))
 
-@testset "testing `simulate`" begin
+@testset "testing `simulate` default" begin
     p = (r = rand(N), b = rand(N), α = rand(1))
     u0 = rand(N)
-    dudt_log = Modelα(ModelParams(p,
-                                    dist,
+    dudt_log = Modelα(ModelParams(;p,
                                     tspan,
                                     u0,
-                                    BS3()
+                                    alg=BS3()
+                                    ))
+    sol = simulate(dudt_log; u0, p)
+    @test sol.retcode == :Success
+end
+
+@testset "testing `simulate` bijectors" begin
+    p = (r = rand(N), b = rand(N), α = rand(1))
+    u0 = rand(N)
+    dudt_log = Modelα(ModelParams(;p,
+                                    p_bij,
+                                    u0_bij,
+                                    tspan,
+                                    u0,
+                                    alg=BS3()
                                     ))
     sol = simulate(dudt_log; u0, p)
     @test sol.retcode == :Success
@@ -49,11 +63,11 @@ end
 @testset "testing bijections forward inverse" begin
     p_true = (r = rand(N), b = rand(N), α = rand(1))
     u0 = rand(N)
-    model = Modelα(ModelParams(p_true,
-                            dist,
+    model = Modelα(ModelParams(;p = p_true,
+                            p_bij,
                             tspan,
                             u0,
-                            BS3()
+                            alg = BS3()
                             ))
     pflat, _ = Optimisers.destructure(p_true)
     paraminv = inverse(get_p_bijector(model))(pflat)
@@ -66,11 +80,11 @@ end
     pflat2, _ = Optimisers.destructure(p2)
 
     u0 = rand(N)
-    dudt_log = Modelα(ModelParams(p,
-                                    dist,
+    dudt_log = Modelα(ModelParams(;p,
+                                    p_bij,
                                     tspan,
                                     u0,
-                                    BS3();
+                                    alg = BS3(),
                                     saveat=tsteps
                                     ))
     sol = simulate(dudt_log; u0, p)
@@ -84,7 +98,7 @@ end
 #     p_true = (r = rand(N), b = rand(N), α = rand(1))
 #     u0 = rand(N)
 #     dudt_log = Modelα(ModelParams(p_true,
-#                                     dist,
+#                                     p_bij,
 #                                     tspan,
 #                                     u0,
 #                                     BS3();

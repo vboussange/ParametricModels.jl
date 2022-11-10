@@ -22,7 +22,7 @@ module ParametricModels
     #     get_var_covar_matrix, compute_cis, compute_cis_normal, compute_cis_lognormal,
     #     name, R2
     export Squared, Abs, NegAbs, AbsCap
-    export get_p, get_u0, get_alg, get_p_bijector, get_re, get_tspan, 
+    export get_p, get_u0,get_u0_bijector, get_alg, get_p_bijector, get_re, get_tspan, 
         get_dims, get_plength, get_kwargs, get_mp
 
 end

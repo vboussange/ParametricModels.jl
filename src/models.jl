@@ -45,7 +45,7 @@ function simulate(m::AbstractModel; u0 = nothing, tspan=nothing, p = nothing, kw
     return sol
 end
 
-Base.@kwdef struct ModelParams{P,PST,RE,T,U0,U0ST,A,D,PL,K}
+struct ModelParams{P,PST,RE,T,U0,U0ST,A,D,PL,K}
     p::P # Named tuple, trainable parameters. /!\ Not real values, transformed by p_dist!
     p_bij::PST # p bijectors
     re::RE # to reconstruct parameters
@@ -79,16 +79,12 @@ Type containing the details for the numerical simulation of a model.
 - `sensealg`:
 - `kwargs`: extra keyword args provided to the `solve` function.
 """
-function ModelParams(
-                    p,
-                    p_dists,
-                    tspan,
-                    u0,
-                    u0_bij,
-                    alg;
+function ModelParams(; p, tspan, u0, alg,
+                    p_bij = fill(Identity{0}(),length(p)),
+                    u0_bij = Identity{0}(),
                     sensealg = DiffEqSensitivity.ForwardDiffSensitivity(),
                     kwargs...)
-    @assert length(p_dists) == length(values(p)) "Each element of `p_dist` should correspond to an entry of `p`"
+    @assert length(p_bij) == length(values(p)) "Each element of `p_dist` should correspond to an entry of `p`"
     @assert eltype(p) <: AbstractArray "The values of `p` must be arrays"
     lp = [0;length.(values(p))...]
     idx_st = [sum(lp[1:i])+1:sum(lp[1:i+1]) for i in 1:length(lp)-1]
@@ -97,8 +93,8 @@ function ModelParams(
     plength = sum(length.(values(p)))
     _, re = Optimisers.destructure(p)
 
-    ModelParams(;p,
-                p_bij=Stacked(p_dists,idx_st),
+    ModelParams(p,
+                Stacked(p_bij,idx_st),
                 re,
                 tspan,
                 u0,
@@ -106,11 +102,8 @@ function ModelParams(
                 alg,
                 dims,
                 plength,
-                kwargs=(;sensealg,kwargs...))
+                (;sensealg,kwargs...))
 end
-
-ModelParams(p, tspan, u0, alg; kwargs...) = ModelParams(p, fill(Identity{0}(),length(p)), tspan, u0, fill(Identity{0}(),length(u0)), alg; kwargs...)
-ModelParams(p, p_dists, tspan, u0, alg; kwargs...) = ModelParams(p, p_dists, tspan, u0, Stacked(Identity{0}(), 1:length(u0)), alg; kwargs...)
 
 # This may be the other option for using remake function from SciMLBase
 # see https://github.com/SciML/SciMLBase.jl/blob/d7e3d316a014967414f416efa35e4d1aca5458e5/src/remake.jl#L1-L4
