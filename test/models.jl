@@ -3,6 +3,7 @@ using OrdinaryDiffEq, Test, UnPack
 using Bijectors
 using Random; Random.seed!(2)
 using Optimisers, Distributions
+using ComponentArrays
 #=
 Defining specific models to test `AbstractModel`
 
@@ -30,10 +31,19 @@ N = 10
 tspan = (0., 1.)
 tsteps = range(tspan[1], tspan[end], length=10)
 
-p_bij = (Squared{0}(), Identity{0}(), Identity{0}())
-u0_bij = bijector(Uniform(0,1))
+@testset "testing `simulate` with `ComponentArray`s" begin
+    p = ComponentArray(r = rand(N), b = rand(N), α = rand(1))
+    u0 = rand(N)
+    dudt_log = Modelα(ModelParams(;p,
+                                    tspan,
+                                    u0,
+                                    alg=BS3()
+                                    ))
+    sol = simulate(dudt_log; u0, p)
+    @test sol.retcode == :Success
+end
 
-@testset "testing `simulate` default" begin
+@testset "testing `simulate` with `NamedTuple`s" begin
     p = (r = rand(N), b = rand(N), α = rand(1))
     u0 = rand(N)
     dudt_log = Modelα(ModelParams(;p,
@@ -45,74 +55,18 @@ u0_bij = bijector(Uniform(0,1))
     @test sol.retcode == :Success
 end
 
-@testset "testing `simulate` bijectors" begin
+@testset "testing `simulate` with kwargs" begin
     p = (r = rand(N), b = rand(N), α = rand(1))
     u0 = rand(N)
+    tsteps = tspan[1]:0.1:tspan[2]
     dudt_log = Modelα(ModelParams(;p,
-                                    p_bij,
-                                    u0_bij,
                                     tspan,
                                     u0,
-                                    alg=BS3()
+                                    alg=BS3(),
+                                    saveat = tsteps,
+                                    abstol=1e-6
                                     ))
     sol = simulate(dudt_log; u0, p)
     @test sol.retcode == :Success
+    @test size(Array(sol),2) == length(tsteps)
 end
-
-
-@testset "testing bijections forward inverse" begin
-    p_true = (r = rand(N), b = rand(N), α = rand(1))
-    u0 = rand(N)
-    model = Modelα(ModelParams(;p = p_true,
-                            p_bij,
-                            tspan,
-                            u0,
-                            alg = BS3()
-                            ))
-    pflat, _ = Optimisers.destructure(p_true)
-    paraminv = inverse(get_p_bijector(model))(pflat)
-    @test all(paraminv |> get_p_bijector(model) .≈ pflat)
-end
-
-@testset "testing simulate with bijections" begin
-    p = (r = rand(N), b = rand(N), α = rand(1))
-    p2 = (r = .- p.r, b = p.b, α = p.α)
-    pflat2, _ = Optimisers.destructure(p2)
-
-    u0 = rand(N)
-    dudt_log = Modelα(ModelParams(;p,
-                                    p_bij,
-                                    tspan,
-                                    u0,
-                                    alg = BS3(),
-                                    saveat=tsteps
-                                    ))
-    sol = simulate(dudt_log; u0, p)
-    sol2 = simulate(dudt_log; u0, p = get_p_bijector(dudt_log)(pflat2))
-    @test all(Array(sol) .== Array(sol2))
-end
-
-# using MiniBatchInference, LinearAlgebra
-# # TODO: make sure that the results are coherent
-# @testset "loglikelihood" begin
-#     p_true = (r = rand(N), b = rand(N), α = rand(1))
-#     u0 = rand(N)
-#     dudt_log = Modelα(ModelParams(p_true,
-#                                     p_bij,
-#                                     tspan,
-#                                     u0,
-#                                     BS3();
-#                                     saveat=tsteps
-#                                     ))
-#     ode_data = simulate(dudt_log) |> Array
-
-#     group_size = 6
-#     ranges = get_ranges(group_size, length(tsteps))
-#     pflat,_ = Optimisers.destructure(p_true)
-
-#     p_estimated = pflat .+ 0.02
-#     u0s = [ode_data[:,rg[1]] for rg in ranges]
-#     res = InferenceResult(dudt_log, ResultMLE(p_trained = p_estimated[1:get_plength(dudt_log)],
-#                                             ranges=ranges))
-#     @test ParametricModels.loglikelihood(res, ode_data, 0.1; u0s = u0s) < 1.0
-# end

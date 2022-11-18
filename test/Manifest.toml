@@ -128,6 +128,12 @@ version = "4.3.0"
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 
+[[deps.ComponentArrays]]
+deps = ["ArrayInterface", "ChainRulesCore", "LinearAlgebra", "Requires"]
+git-tree-sha1 = "e2b74499fc7a7bef2d01d999cc7935765c93b5de"
+uuid = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
+version = "0.13.4"
+
 [[deps.ConstructionBase]]
 deps = ["LinearAlgebra"]
 git-tree-sha1 = "fb21ddd70a051d882a1686a5a550990bbe371a95"
