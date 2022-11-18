@@ -5,12 +5,9 @@ module ParametricModels
     using UnPack
     using DocStringExtensions
     using SciMLBase
-    using Bijectors
-    using OrdinaryDiffEq, DiffEqSensitivity
-    using Optimisers
+    using OrdinaryDiffEq
     using LinearAlgebra
     using Requires
-    using ComponentArrays
 
     include("models.jl")
     # include("composable_model.jl")
