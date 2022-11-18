@@ -21,7 +21,7 @@ When provided, keyword arguments overwrite default solving options
 in m.
 If `apply_bij == true`, `p` is transformed according to `m.mp.p_bij`.
 """
-function simulate(m::AbstractModel; u0 = nothing, tspan=nothing, p = nothing, apply_pbij = false, kwargs...)
+function simulate(m::AbstractModel; u0 = nothing, tspan=nothing, p = nothing, kwargs...)
     isnothing(u0) ? u0 = get_u0(m) : nothing
     isnothing(tspan) ? tspan = get_tspan(m) : nothing
     isnothing(p) ? p = get_p(m) : nothing

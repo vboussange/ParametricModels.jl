@@ -13,7 +13,6 @@ module ParametricModels
     # include("composable_model.jl")
     # include("grad_descent.jl")
     # include("inference_result.jl")
-    include("utils.jl")
 
     export AbstractModel, ComposableModel, simulate, ModelParams, @model, name, remake
     # export InferenceResult, construct_result, loglikelihood, estimate_σ,
