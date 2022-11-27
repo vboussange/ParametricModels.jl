@@ -49,14 +49,14 @@ You can write by hand the `struct` to write generic models, which can e.g. be de
 To define a model, you need the following
 
 ```julia
-struct Base.@kwdef MyModel{EF} <: AbstractModel
+Base.@kwdef struct MyModel{EF} <: AbstractModel
     mp::ModelParams
     extra_field::EF #optional
 end
 ```
 And then define the ODE system as usual, where you can use `extra_field` as you wish.
 
-Make sure to use the macro "Base.@kwdef". This defines a constructor `MyModel(;mp, extra_field)`, which is used internally in ParametricModels.jl.
+Make sure to use the macro `Base.@kwdef`. This defines a constructor `MyModel(;mp, extra_field)`, which is used internally in ParametricModels.jl.
 
 ## Use with MiniBatchInference.jl
 Have you heard of MiniBatchInference.jl? In this library aiming at fitting ODE parameters, ParametricModels.jl proves very useful. It helps defining a space for the parameters in order to apply e.g. stochastic gradient descent with parameter constraints. It does so through the library Bijectors.jl. This can be done like so:
