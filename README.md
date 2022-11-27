@@ -57,22 +57,3 @@ end
 And then define the ODE system as usual, where you can use `extra_field` as you wish.
 
 Make sure to use the macro `Base.@kwdef`. This defines a constructor `MyModel(;mp, extra_field)`, which is used internally in ParametricModels.jl.
-
-## Use with MiniBatchInference.jl
-Have you heard of MiniBatchInference.jl? In this library aiming at fitting ODE parameters, ParametricModels.jl proves very useful. It helps defining a space for the parameters in order to apply e.g. stochastic gradient descent with parameter constraints. It does so through the library Bijectors.jl. This can be done like so:
-
-```julia
-# We constrain the parameter vector `r` 
-# to take positive values, 
-# while `b` is not constrained
-p1 = (r = [0.05, 0.06], b = [0.23, 0.5],)
-dists = (Abs{0}(), Identity{0}())
-mp = ModelParams(p1,
-                dists,
-                tspan,
-                u0, 
-                BS3(),
-                saveat = tsteps, 
-                )
-model = LogisticGrowth(mp)
-```
