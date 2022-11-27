@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/vboussange/ParametricModels.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/vboussange/ParametricModels.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-DifferentialEquations.jl is amazing, but sometimes you want to write an ODE model once for all, and simply play around with the model without bothering further with the details of the numerical solve, etc... If this is the case, ParametricModels.jl is for you!
+**DifferentialEquations.jl** is amazing, but sometimes you want to write an ODE model once for all, and simply play around with the model without bothering further about the details of the numerical solve, etc... If this is the case, **ParametricModels.jl** is for you!
 
 ## Getting started
 
@@ -43,12 +43,12 @@ sol3 = simulate(model, u0 = u0)
 ```
 
 ## Defining generic models
-The macro @model defines under the hood a `struct` which inherits AbstractModel.
+The macro `@model` defines under the hood a `struct` which inherits AbstractModel.
 You can write by hand the `struct` to write generic models, which can e.g. be declined for ODE systems with state variables with arbitrary dimensions, or with exchangeable components.
 
 To define a model, you need the following
 
-```
+```julia
 struct Base.@kwdef MyModel{EF} <: AbstractModel
     mp::ModelParams
     extra_field::EF #optional
