@@ -13,7 +13,7 @@ using ParametricModels, UnPack
 @model LogisticGrowth
 
 # Define the ODE system
-function LogisticGrowth(du, u, p, t)
+function (model::LogisticGrowth)(du, u, p, t)
     @unpack r, b = p
     du .=  r .* u .* ( 1. .- b .* u) 
 end
