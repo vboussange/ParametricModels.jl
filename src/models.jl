@@ -73,8 +73,6 @@ Structure containing the details for the numerical simulation of a model.
 
 # Arguments
 - `p`: default parameter.
-- `p_bij`: a bijector from `Bijectors.jl`. 
-    If `p` is a `ComponentArray`, can be a tuple of bijectors, each corresponding to an entry of `p`
 - `tspan`: time span of the simulation
 - `u0`: initial condition of the simulation
 - `alg`: numerical solver
