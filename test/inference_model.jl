@@ -3,7 +3,7 @@ Using Turing on synthetic data
 =#
 cd(@__DIR__)
 using MiniBatchInference, OrdinaryDiffEq
-using DiffEqSensitivity
+using SciMLSensitivity
 using Optimization, OptimizationFlux, OptimizationOptimJL # for optimizers
 using LinearAlgebra
 using SimpleWeightedGraphs, LightGraphs
