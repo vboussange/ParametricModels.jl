@@ -96,6 +96,11 @@ get_u0(m::AbstractModel) = m.mp.u0
 get_alg(m::AbstractModel) = m.mp.alg
 get_tspan(m::AbstractModel) = m.mp.tspan
 get_kwargs(m::AbstractModel) = m.mp.kwargs
+"""
+$SIGNATURES
+
+Returns the dimension of the state variable
+"""
 get_dims(m::AbstractModel) = length(get_u0(m))
 
 """
