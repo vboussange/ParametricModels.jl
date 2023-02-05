@@ -45,7 +45,7 @@ sol3 = simulate(model, u0 = u0)
 
 # even cooler: let's change only a subset of the parameters
 p2 = (r = [0.05, 0.07],)
-sol2 = simulate(model, p = p3)
+sol2 = simulate(model, p = p2)
 ```
 
 ## Defining generic models

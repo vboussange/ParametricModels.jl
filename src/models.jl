@@ -37,7 +37,7 @@ function simulate(m::AbstractModel; u0 = nothing, tspan=nothing, p = nothing, kw
 end
 
 struct ModelParams{P,T,U0,A,K}
-    p::P # model parameters; we require dictionary or named tuples
+    p::P # model parameters; we require dictionary or named tuples or componentarrays
     tspan::T # time span
     u0::U0 # initial conditions
     alg::A # alg for ODEsolve
@@ -45,7 +45,14 @@ struct ModelParams{P,T,U0,A,K}
 end
 
 import SciMLBase.remake
-remake(mp::ModelParams; p) = ModelParams(p, mp.tspan, mp.u0, mp.alg, mp.kwargs)
+function remake(mp::ModelParams; 
+        p = mp.p, 
+        tspan = mp.tspan, 
+        u0 = mp.u0, 
+        alg = mp.alg, 
+        kwargs = mp.kwargs) 
+    ModelParams(p, tspan, u0, alg, kwargs)
+end
     
 # # for the remake fn
 # function ModelParams(;p, 
