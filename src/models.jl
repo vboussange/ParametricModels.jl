@@ -19,12 +19,17 @@ $(SIGNATURES)
 Simulate model `m` and returns an `ODESolution`.  
 When provided, keyword arguments overwrite default solving options 
 in m.
-If `apply_bij == true`, `p` is transformed according to `m.mp.p_bij`.
 """
 function simulate(m::AbstractModel; u0 = nothing, tspan=nothing, p = nothing, kwargs...)
     isnothing(u0) ? u0 = get_u0(m) : nothing
     isnothing(tspan) ? tspan = get_tspan(m) : nothing
-    isnothing(p) ? p = get_p(m) : nothing
+    if isnothing(p) 
+        p = get_p(m) 
+    else
+        # p can be a sub tuple of the full parameter tuple
+        p0 = get_p(m)
+        p = merge(p0, p)
+    end
     prob = get_prob(m, u0, tspan, p)
     # kwargs erases get_kwargs(m)
     sol = solve(prob, get_alg(m); get_kwargs(m)..., kwargs...)
@@ -32,9 +37,9 @@ function simulate(m::AbstractModel; u0 = nothing, tspan=nothing, p = nothing, kw
 end
 
 struct ModelParams{P,T,U0,A,K}
-    p::P # Trainable parameters. /!\ Not real values, transformed by p_dist!
+    p::P # model parameters; we require dictionary or named tuples
     tspan::T # time span
-    u0::U0 # u0. /!\ Not real values, transformed by p_dist!
+    u0::U0 # initial conditions
     alg::A # alg for ODEsolve
     kwargs::K # kwargs given to solve fn, e.g., saveat
 end

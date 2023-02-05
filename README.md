@@ -35,11 +35,17 @@ model = LogisticGrowth(mp)
 # Playing with the model, without worrying about the details!
 sol = simulate(model)
 
+# Let's change the parameter values
 p2 = (r = [0.05, 0.06], b = [0.4, 0.6],)
 sol2 = simulate(model, p = p2)
 
+# Or the initial conditions
 u0  = [3., 4.]
 sol3 = simulate(model, u0 = u0)
+
+# even cooler: let's change only a subset of the parameters
+p2 = (r = [0.05, 0.07],)
+sol2 = simulate(model, p = p3)
 ```
 
 ## Defining generic models
