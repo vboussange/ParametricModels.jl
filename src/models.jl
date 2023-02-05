@@ -20,7 +20,7 @@ Simulate model `m` and returns an `ODESolution`.
 When provided, keyword arguments overwrite default solving options 
 in m.
 """
-function simulate(m::AbstractModel; u0 = nothing, tspan=nothing, p = nothing, kwargs...)
+function simulate(m::AbstractModel; u0 = nothing, tspan=nothing, p = nothing, alg = nothing, kwargs...)
     isnothing(u0) ? u0 = get_u0(m) : nothing
     isnothing(tspan) ? tspan = get_tspan(m) : nothing
     if isnothing(p) 
@@ -30,9 +30,10 @@ function simulate(m::AbstractModel; u0 = nothing, tspan=nothing, p = nothing, kw
         p0 = get_p(m)
         p = merge(p0, p)
     end
+    isnothing(alg) ? alg = get_alg(m) : nothing
     prob = get_prob(m, u0, tspan, p)
     # kwargs erases get_kwargs(m)
-    sol = solve(prob, get_alg(m); get_kwargs(m)..., kwargs...)
+    sol = solve(prob, alg; get_kwargs(m)..., kwargs...)
     return sol
 end
 
@@ -84,16 +85,17 @@ $(SIGNATURES)
 Structure containing the details for the numerical simulation of a model.
 
 # Arguments
-- `p`: default parameter.
 - `tspan`: time span of the simulation
 - `u0`: initial condition of the simulation
 - `alg`: numerical solver
 - `kwargs`: extra keyword args provided to the `solve` function.
 
+# Optional
+- `p`: default parameter values
 # Example
 mp = ModelParams()
 """
-function ModelParams(; p, tspan, u0, alg, kwargs...)
+function ModelParams(; p = nothing, tspan = nothing, u0 = nothing, alg = nothing, kwargs...)
     ModelParams(p,
                 tspan,
                 u0,
