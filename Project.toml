@@ -1,9 +1,10 @@
 name = "ParametricModels"
 uuid = "ea05b012-1b06-4aec-a786-2a545e229cd0"
 authors = ["Victor Boussange"]
-version = "0.3.2"
+version = "0.3.3"
 
 [deps]
+ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"

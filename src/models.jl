@@ -1,3 +1,5 @@
+import Base
+Base.merge(ca::ComponentArray, ca2::ComponentArray) = ComponentArray(ca; ca2...)
 
 abstract type AbstractModel end
 name(m::AbstractModel) = string(nameof(typeof(m)))

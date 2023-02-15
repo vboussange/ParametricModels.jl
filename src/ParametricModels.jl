@@ -8,6 +8,7 @@ module ParametricModels
     using OrdinaryDiffEq
     using LinearAlgebra
     using Requires
+    using ComponentArrays
 
     include("models.jl")
     # include("composable_model.jl")
