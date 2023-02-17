@@ -1,5 +1,19 @@
 import Base
-Base.merge(ca::ComponentArray, ca2::ComponentArray) = ComponentArray(;ca..., ca2...)
+function Base.merge(ca::ComponentArray{T}, ca2::ComponentArray{T}) where T
+    ax = getaxes(ca)
+    ax2 = getaxes(ca2)
+    vks = valkeys(ax[1])
+    vks2 = valkeys(ax2[1])
+    _p = Vector{T}()
+    for vk in vks
+        if vk in vks2
+            _p = vcat(_p, ca2[vk])
+        else
+            _p = vcat(_p, ca[vk])
+        end
+    end
+    ComponentArray(_p, ax)
+end
 
 abstract type AbstractModel end
 name(m::AbstractModel) = string(nameof(typeof(m)))
