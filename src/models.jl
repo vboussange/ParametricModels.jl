@@ -1,5 +1,5 @@
 import Base
-function Base.merge(ca::ComponentArray{T}, ca2::ComponentArray{T}) where T
+function Base.merge(ca::ComponentArray{T}, ca2::ComponentArray{T2}) where {T, T2}
     ax = getaxes(ca)
     ax2 = getaxes(ca2)
     vks = valkeys(ax[1])
