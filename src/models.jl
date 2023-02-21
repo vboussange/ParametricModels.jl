@@ -7,9 +7,9 @@ function Base.merge(ca::ComponentArray{T}, ca2::ComponentArray{T2}) where {T, T2
     _p = Vector{T}()
     for vk in vks
         if vk in vks2
-            _p = vcat(_p, ca2[vk])
+            _p = vcat(_p, reshape(ca2[vk], :))
         else
-            _p = vcat(_p, ca[vk])
+            _p = vcat(_p, reshape(ca[vk], :))
         end
     end
     ComponentArray(_p, ax)
