@@ -7,13 +7,37 @@ function Base.merge(ca::ComponentArray{T}, ca2::ComponentArray{T2}) where {T, T2
     _p = Vector{T}()
     for vk in vks
         if vk in vks2
-            _p = vcat(_p, reshape(ca2[vk], :))
+            _vec = vec(getproperty(ca2, vk)) # ca2[vk]
+            _p = vcat(_p, _vec)
         else
-            _p = vcat(_p, reshape(ca[vk], :))
+            _vec = vec(getproperty(ca, vk)) # ca1[vk]
+            _p = vcat(_p, _vec)
         end
     end
     ComponentArray(_p, ax)
 end
+
+Base.merge(::Nothing, ca2::ComponentArray{T2}) where {T2} = ca2
+
+
+# This piece is inspired from https://github.com/jonniedie/ComponentArrays.jl/pull/217
+# import ComponentArrays: promote_type, getval, Val, indexmap
+# @generated function valkeys(ax::AbstractAxis)
+#     idxmap = indexmap(ax)
+#     k = Val.(keys(idxmap))
+#     return :($k)
+# end
+# valkeys(ca::ComponentVector) = valkeys(getaxes(ca)[1])
+
+# function merge(cvec1::ComponentVector{T1}, cvec2::ComponentVector{T2}) where {T1, T2}
+#     typed_dict = ComponentVector{promote_type(T1, T2)}(cvec1)
+#     for key in valkeys(cvec2)
+#         keyname = getval(key)
+#         val = cvec2[key]
+#         typed_dict = eval(:( ComponentArray($typed_dict, $keyname = $val) ))
+#     end
+#     typed_dict
+# end
 
 abstract type AbstractModel end
 name(m::AbstractModel) = string(nameof(typeof(m)))
